@@ -45,6 +45,7 @@ function UsageTrack() {
       }
       setUserSubscription(true);
       setMaxWords(100000);
+      console.log(result);
     } catch (error) {
       console.log(error);
     }
