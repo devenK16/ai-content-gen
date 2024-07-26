@@ -6,8 +6,8 @@ export default clerkMiddleware((auth, req) => {
   
 
 const isProtectedRoute = createRouteMatcher([
-    // '/dashboard(.*)',
-    '/'
+    '/dashboard(.*)',
+    // '/'
   ]);
 
 export const config = {
