@@ -14,17 +14,21 @@ const layout = ({
   const [totalUsage, setTotalUsage] = useState<Number>(0);
   const [userSubscription, setUserSubscription] = useState<boolean>(false);
   const [updateCreditUsage, setUpdateCreditUsage] = useState<Date>();  
+  const [isSideNavOpen, setIsSideNavOpen] = useState(false);
+  const toggleSideNav = () => {
+    setIsSideNavOpen(!isSideNavOpen);
+  };
   
   return (
     <TotalUsageContext.Provider value={{ totalUsage, setTotalUsage }}>
       <UserSubscriptionContext.Provider value={{ userSubscription, setUserSubscription }}>
         <UpdateCreditUsageContext.Provider value={{updateCreditUsage, setUpdateCreditUsage}}>
           <div className='bg-slate-100 h-screen'>
-            <div className='md:w-64 hidden md:block fixed'>
-              <SideNav />
+            <div className='md:w-64 fixed'>
+              <SideNav isOpen={isSideNavOpen} onClose={() => setIsSideNavOpen(false)}  />
             </div>
             <div className='md:ml-64'>
-              <Header />
+              <Header onMenuClick={toggleSideNav}  />
               {children}
             </div>
           </div>

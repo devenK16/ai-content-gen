@@ -1,12 +1,17 @@
 "use client"
-import { FileClock, Home, Settings, WalletCards } from 'lucide-react'
+import { FileClock, Home, Settings, WalletCards , X } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import React, { useEffect } from 'react'
 import UsageTrack from './UsageTrack'
 
-const SideNav = () => {
+interface SideNavProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+const SideNav = ({ isOpen, onClose } : SideNavProps) => {
   const MenuList=[
     {
       name:"Home",
@@ -34,9 +39,14 @@ const SideNav = () => {
     
   })
   return (
-    <div className='h-screen relative p-5 shadow-sm border bg-white'>
-      <div className='flex justify-center'>
-        <Image src="/logo.svg" alt="logo" width={100} height={100}/>
+    <div className={`fixed inset-y-0 left-0 z-30 w-64 bg-white transform ${isOpen ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-300 ease-in-out md:relative md:translate-x-0 h-screen p-5 shadow-sm border`}>
+      <div className="flex justify-between items-center mb-6">
+        <div className='flex justify-center'>
+          <Image src="/logo.svg" alt="logo" width={100} height={100}/>
+        </div>
+        <button onClick={onClose} className="md:hidden">
+          <X className="h-6 w-6" />
+        </button>
       </div>
       <hr className='my-6 border'/>
       <div className='mt-3'>
