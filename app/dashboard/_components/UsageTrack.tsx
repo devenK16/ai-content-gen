@@ -10,9 +10,10 @@ import { HISTORY } from '../history/page';
 import { TotalUsageContext } from '@/app/(context)/TotalUsageContext';
 import { UserSubscriptionContext } from '@/app/(context)/UserSubscriptionContext';
 import { UpdateCreditUsageContext } from '@/app/(context)/UpdateCreditUsageContext';
+import { useRouter } from 'next/navigation';
 
 function UsageTrack() {
-
+  const router = useRouter(); 
   const { user } = useUser();
   const { totalUsage, setTotalUsage } = useContext(TotalUsageContext);
   const { userSubscription, setUserSubscription } = useContext(UserSubscriptionContext);
@@ -80,6 +81,10 @@ function UsageTrack() {
     setTotalUsage(total);
   }
 
+  const handleUpgradeClick = () => {
+    router.push('/dashboard/billing'); // Redirect to the billing route
+  };
+
   return (
     <div className='m-5'>
       <div className='bg-primary text-white p-3 rounded-lg'>
@@ -94,7 +99,7 @@ function UsageTrack() {
         </div>
         <h2 className='text-sm my-2'>{totalUsage}/{maxWords} credit used</h2>
       </div>
-      <Button variant={'secondary'} className='w-full mt-5 text-primary'>Upgrade</Button>
+      <Button variant={'secondary'} className='w-full mt-5 text-primary' onClick={handleUpgradeClick} >Upgrade</Button>
     </div>
 
   );
