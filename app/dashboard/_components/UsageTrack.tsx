@@ -20,44 +20,64 @@ function UsageTrack() {
   const [maxWords, setMaxWords] = useState<number>(10000);
 
   useEffect(() => {
-    user && GetData();
-    user && isUserSubscribed(user);
+    if (user) {
+      GetData();
+      checkUserSubscription();
+    }
   }, [user]);
 
   useEffect(() => {
-    user && GetData();
-  }, [updateCreditUsage && user]);
+    if (user && updateCreditUsage) {
+      GetData();
+    }
+  }, [updateCreditUsage, user]);
 
   const GetData = async () => {
-    {/* @ts-ignore */ }
+    const email = user?.primaryEmailAddress?.emailAddress;
+    if (!email) {
+      console.error("User email is undefined");
+      return;
+    }
+    //@ts-ignore
     const result: HISTORY[] = await db.select().from(AIOutput)
-      .where(eq(AIOutput.createdBy, user?.primaryEmailAddress?.emailAddress ?? ''))
-
-    GetTotalUsage(result)
+      .where(eq(AIOutput.createdBy, email));
+    GetTotalUsage(result);
   }
 
-  const isUserSubscribed = async (user: any) => {
+  // Updated function to handle potential undefined email
+  const checkUserSubscription = async () => {
     try {
-      const result = await db.select().from(UserSubscription).where(eq(UserSubscription.email, user?.primaryEmailAddress?.emailAddress));
-      if (!result) {
-        console.log("subscription not found")
+      const email = user?.primaryEmailAddress?.emailAddress;
+      if (!email) {
+        console.error("User email is undefined");
+        setUserSubscription(false);
+        setMaxWords(10000);
         return;
       }
-      setUserSubscription(true);
-      setMaxWords(100000);
-      console.log(result);
+
+      const result = await db.select().from(UserSubscription)
+        .where(eq(UserSubscription.email, email));
+      
+      if (result && result.length > 0 && result[0].active) {
+        setUserSubscription(true);
+        setMaxWords(100000);
+      } else {
+        setUserSubscription(false);
+        setMaxWords(10000);
+      }
     } catch (error) {
-      console.log(error);
+      console.error("Error checking user subscription:", error);
+      setUserSubscription(false);
+      setMaxWords(10000);
     }
   }
 
   const GetTotalUsage = (result: HISTORY[]) => {
-    let total: number = 0
+    let total: number = 0;
     result.forEach(element => {
-      total = total + Number(element.aiResponse?.length)
-    })
-
-    setTotalUsage(total)
+      total = total + Number(element.aiResponse?.length);
+    });
+    setTotalUsage(total);
   }
 
   return (

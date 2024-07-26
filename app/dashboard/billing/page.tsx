@@ -1,7 +1,7 @@
 "use client";
 import Header from "./../_components/Header";
 import SideNav from "./../_components/SideNav";
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Loader2Icon } from "lucide-react";
 import moment from "moment";
 import { UserSubscription } from "@/utils/schema";
@@ -9,11 +9,43 @@ import { db } from "@/utils/db";
 import { useUser } from "@clerk/nextjs";
 import axios from "axios";
 import { UserSubscriptionContext } from "../../(context)/UserSubscriptionContext";
+import { eq } from 'drizzle-orm';
+
 
 const BillingPage = () => {
   const { user } = useUser();
   const [loading, setLoading] = useState(false);
   const {userSubscription, setUserSubscription} =useContext(UserSubscriptionContext);
+
+  useEffect(() => {
+    if (user) {
+      checkUserSubscription();
+    }
+  }, [user]);
+
+  // Updated function to handle potential undefined email
+  const checkUserSubscription = async () => {
+    try {
+      const email = user?.primaryEmailAddress?.emailAddress;
+      if (!email) {
+        console.error("User email is undefined");
+        setUserSubscription(false);
+        return;
+      }
+
+      const result = await db.select().from(UserSubscription)
+        .where(eq(UserSubscription.email, email));
+      
+      if (result && result.length > 0 && result[0].active) {
+        setUserSubscription(true);
+      } else {
+        setUserSubscription(false);
+      }
+    } catch (error) {
+      console.error("Error checking user subscription:", error);
+      setUserSubscription(false);
+    }
+  };
 
   const createSubscription = async () => {
     try {
@@ -59,23 +91,44 @@ const BillingPage = () => {
     }
   };
 
+  // Updated function to handle potential undefined email
   const saveSubscription = async (paymentId: string) => {
     try {
-      const subscriptionResult = await db.insert(UserSubscription).values({
-        email: user?.primaryEmailAddress?.emailAddress,
-        userName: user?.fullName, // This is likely causing the error
-        active: true,
-        paymentId: paymentId,
-        joinDate: moment().format("DD/MM/yyyy"),
-      });
-      console.log(subscriptionResult);
-      if (subscriptionResult) {
-        window.location.reload();
+      const email = user?.primaryEmailAddress?.emailAddress;
+      if (!email) {
+        console.error("User email is undefined");
+        return;
       }
+
+      const existingUser = await db.select().from(UserSubscription)
+        .where(eq(UserSubscription.email, email));
+
+      if (existingUser && existingUser.length > 0) {
+        // Update existing user
+        await db.update(UserSubscription)
+          .set({
+            active: true,
+            paymentId: paymentId,
+          })
+          .where(eq(UserSubscription.email, email));
+      } else {
+        // Insert new user
+        await db.insert(UserSubscription).values({
+          email: email,
+          userName: user?.fullName ?? '',
+          active: true,
+          paymentId: paymentId,
+          joinDate: moment().format("DD/MM/yyyy"),
+        });
+      }
+
+      setUserSubscription(true);
+      window.location.reload();
     } catch (error) {
-      console.log(error);
+      console.error("Error saving subscription:", error);
     }
   };
+
 
   return (
     <div className="bg-slate-200 h-screen">
