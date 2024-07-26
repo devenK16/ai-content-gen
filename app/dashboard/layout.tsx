@@ -24,7 +24,7 @@ const layout = ({
       <UserSubscriptionContext.Provider value={{ userSubscription, setUserSubscription }}>
         <UpdateCreditUsageContext.Provider value={{updateCreditUsage, setUpdateCreditUsage}}>
           <div className='bg-slate-100 h-screen'>
-            <div className='md:w-64 fixed'>
+            <div className='md:w-64 absolute'>
               <SideNav isOpen={isSideNavOpen} onClose={() => setIsSideNavOpen(false)}  />
             </div>
             <div className='md:ml-64'>
